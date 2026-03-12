@@ -219,11 +219,9 @@ input[type=file]{display:none}
   .pc-left{
     border-right:1px solid var(--border);
     display:flex;flex-direction:column;
-    overflow-y:auto;
+    overflow:hidden;
     background:var(--surface);
   }
-  .pc-left::-webkit-scrollbar{width:4px}
-  .pc-left::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
   /* ── 中央カラム: プレビュー ── */
   .pc-center{
@@ -235,13 +233,13 @@ input[type=file]{display:none}
   /* ── 右カラム: 設定パネル ── */
   .pc-right{
     border-left:1px solid var(--border);
-    display:flex;flex-direction:column;
-    overflow-y:scroll;
-    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
     background:var(--surface);
   }
-  .pc-right::-webkit-scrollbar{width:4px}
-  .pc-right::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+  .pc-right::-webkit-scrollbar{width:5px}
+  .pc-right::-webkit-scrollbar-track{background:var(--surface2)}
+  .pc-right::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
   /* カラム内パディング */
   .pc-col-pad{padding:16px}
