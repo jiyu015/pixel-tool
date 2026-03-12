@@ -62,6 +62,7 @@ button,input,select{font-family:inherit}
 
 /* ═══ OUTPUT ═══ */
 .output-wrap{border-radius:var(--r);overflow:hidden;background:var(--surface2);min-height:160px;display:flex;align-items:center;justify-content:center;position:relative}
+.output-wrap.transparent-bg{background-image:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%);background-size:16px 16px;background-color:#fff}
 .out-placeholder{text-align:center;color:var(--ink3);padding:32px 20px}
 .out-placeholder .ph-icon{font-size:32px;margin-bottom:6px}
 .out-placeholder .ph-text{font-size:12px}
@@ -125,21 +126,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 .pal-sw{width:8px;height:8px;border-radius:2px;border:1px solid rgba(0,0,0,.1)}
 
 /* ═══ REMAP ═══ */
-.remap-toolbar{display:flex;gap:8px;margin-bottom:10px;align-items:center}
-.remap-sort{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;background:var(--surface2);color:var(--ink);outline:none;cursor:pointer;min-height:36px}
-.remap-sort:focus{border-color:var(--accent)}
-.remap-list{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto}
-.remap-list::-webkit-scrollbar{width:3px}
-.remap-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.remap-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);transition:border-color .15s}
-.remap-item:hover{border-color:var(--border2)}
-.remap-swatch{width:30px;height:30px;border-radius:6px;border:2px solid rgba(0,0,0,.1);flex-shrink:0;cursor:pointer;outline:none;padding:0;-webkit-appearance:none;appearance:none}
-.remap-swatch.from{cursor:default;pointer-events:none}
-.remap-arrow{color:var(--ink3);font-size:14px;flex-shrink:0}
-.remap-info{flex:1;min-width:0}
-.remap-hex{font-size:10px;color:var(--ink3);font-family:monospace}
-.remap-pct{font-size:10px;font-weight:600;color:var(--ink2)}
-.remap-hint{text-align:center;padding:24px 16px;color:var(--ink3);font-size:12px}
 
 /* ═══ STATUS ═══ */
 .status-bar{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;color:var(--ink2);margin-bottom:10px;min-height:38px}
@@ -318,8 +304,7 @@ input[type=file]{display:none}
   .pc-right .pal-grid{grid-template-columns:repeat(2,1fr)}
 
   /* 右カラム: リマップ */
-  .pc-right .remap-list{max-height:260px}
-
+  .pc-right 
   /* 変換ボタン */
   .pc-convert-btn{
     margin:12px;
@@ -360,52 +345,62 @@ input[type=file]{display:none}
   <!-- PAGE: 変換 -->
   <div class="page active" id="page-convert">
     <div class="status-bar"><span class="sd" id="sd-m"></span><span id="stText-m">画像をアップロードしてください</span></div>
+
+    <!-- アップロード or ドット絵プレビュー (1枚のカード) -->
     <div class="card">
-      <div class="card-head"><span class="card-title">元画像</span><span class="card-badge" id="srcInfo-m">—</span></div>
-      <div class="card-body" style="padding:10px">
-        <div style="position:relative">
-          <div class="upload-zone" id="uploadZone-m">
-            <div class="upload-icon">🖼️</div>
-            <div class="upload-title">タップして選択</div>
-            <div class="upload-sub">JPG / PNG / WEBP<br><strong>ドラッグ&amp;ドロップも可</strong></div>
-          </div>
-          <img id="srcPreview-m" alt="">
-          <button class="change-img-btn hidden" id="changeImgBtn-m">✎ 変更</button>
+      <div class="card-head">
+        <span class="card-title" id="previewLabel-m">元画像</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge" id="srcInfo-m">—</span>
+          <span class="card-badge hidden" id="outInfo-m" style="background:var(--accent-soft);color:var(--accent)">—</span>
+          <button class="change-img-btn" id="changeImgBtn-m" style="position:static;background:var(--surface2);color:var(--ink2);font-size:11px;padding:3px 8px;border-radius:6px" class="hidden">✎ 変更</button>
         </div>
       </div>
-    </div>
-    <button class="btn btn-primary" id="convertBtn-m" style="margin-bottom:10px">▶ ドット絵に変換</button>
-    <div class="card">
-      <div class="card-head"><span class="card-title">ドット絵</span><span class="card-badge" id="outInfo-m">—</span></div>
       <div class="card-body" style="padding:10px">
-        <div class="view-toggle hidden" id="viewToggle-m">
-          <button class="view-btn active" data-v="output">ドット絵</button>
-          <button class="view-btn" data-v="ab">A/B比較</button>
-          <button class="view-btn" data-v="original">元画像</button>
+        <!-- アップロードゾーン (画像なし時) -->
+        <div class="upload-zone" id="uploadZone-m">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-title">タップして選択</div>
+          <div class="upload-sub">JPG / PNG / WEBP<br><strong>ドラッグ&amp;ドロップも可</strong></div>
         </div>
-        <div style="position:relative">
-          <div class="output-wrap" id="outputWrap-m">
-            <div class="out-placeholder" id="outPlaceholder-m"><div class="ph-icon">⬜</div><div class="ph-text">変換後がここに表示されます</div></div>
-            <canvas id="outCanvas-m"></canvas>
-            <div class="ab-wrap" id="abWrap-m">
-              <canvas id="abA-m" class="ab-canvas-a"></canvas>
-              <canvas id="abB-m" class="ab-canvas-b"></canvas>
-              <div class="ab-line" id="abLine-m"></div>
-              <div class="ab-handle" id="abHandle-m">⇔</div>
-              <span class="ab-lbl ab-lbl-a">元画像</span><span class="ab-lbl ab-lbl-b">ドット絵</span>
+        <!-- プレビューエリア (画像あり時) -->
+        <div id="previewArea-m" style="display:none">
+          <!-- ビュー切り替え -->
+          <div class="view-toggle hidden" id="viewToggle-m" style="margin-bottom:8px">
+            <button class="view-btn active" data-v="output">ドット絵</button>
+            <button class="view-btn" data-v="ab">A/B比較</button>
+            <button class="view-btn" data-v="original">元画像</button>
+          </div>
+          <div style="position:relative">
+            <div class="output-wrap" id="outputWrap-m">
+              <div class="out-placeholder" id="outPlaceholder-m"><div class="ph-icon">⬜</div><div class="ph-text">変換中...</div></div>
+              <canvas id="outCanvas-m"></canvas>
+              <div class="ab-wrap" id="abWrap-m">
+                <canvas id="abA-m" class="ab-canvas-a"></canvas>
+                <canvas id="abB-m" class="ab-canvas-b"></canvas>
+                <div class="ab-line" id="abLine-m"></div>
+                <div class="ab-handle" id="abHandle-m">⇔</div>
+                <span class="ab-lbl ab-lbl-a">元画像</span><span class="ab-lbl ab-lbl-b">ドット絵</span>
+              </div>
             </div>
+            <div class="proc-overlay" id="procOverlay-m"><div class="spinner"></div><div class="proc-label">変換中...</div></div>
           </div>
-          <div class="proc-overlay" id="procOverlay-m"><div class="spinner"></div><div class="proc-label">変換中...</div></div>
         </div>
       </div>
     </div>
+
+    <!-- 履歴 -->
     <div class="card hidden" id="historyCard-m">
       <div class="card-head"><span class="card-title">変換履歴</span><span class="card-badge" id="histBadge-m">0</span></div>
       <div class="card-body" style="padding:8px 12px"><div class="history-strip" id="histStrip-m"></div></div>
     </div>
+
+    <!-- アクションボタン -->
     <div class="btn-row mt8">
-      <button class="btn btn-ghost" id="downloadBtn-m" disabled>⬇ PNG保存</button>
-      <button class="btn btn-ghost" id="resetBtn-m" disabled style="flex:0 0 auto;width:46px;padding:10px">↺</button>
+      <button class="btn btn-primary" id="convertBtn-m">▶ 変換</button>
+      <button class="btn btn-primary" id="downloadBtn-m" disabled style="display:none">⬇ 保存</button>
+      <button class="btn btn-ghost" id="undoBtn" disabled style="flex:0 0 auto;width:auto;padding:10px 14px;font-size:12px;display:none">← 戻る</button>
+      <button class="btn btn-ghost" id="resetBtn-m" disabled style="flex:0 0 auto;width:46px;padding:10px;display:none">↺</button>
     </div>
   </div>
 
@@ -434,32 +429,18 @@ input[type=file]{display:none}
       <div class="sec-label">カラーパレット</div>
       <div class="pal-grid" id="palGrid"></div>
     </div></div>
-  </div>
-
-  <!-- PAGE: カラー -->
-  <div class="page" id="page-color">
-    <div class="page-title">カラーリマップ</div>
-    <div class="page-sub">各色をクリックして変更できます</div>
     <div class="card"><div class="card-body">
-      <div class="remap-toolbar">
-        <select class="remap-sort" id="remapSort"><option value="freq">使用頻度順</option><option value="hue">色相順</option><option value="bright">明度順</option></select>
-        <button class="btn btn-ok" style="width:auto;padding:7px 14px;min-height:36px;font-size:12px;border-radius:var(--r-sm)" id="applyRemapBtn" disabled>適用</button>
+      <div class="sec-label">背景透過</div>
+      <div class="toggle-row" style="margin-bottom:10px">
+        <span class="toggle-label">背景を透過する</span>
+        <label class="toggle"><input type="checkbox" id="bgRemoveOn"><span class="toggle-track"></span></label>
       </div>
-      <div class="remap-hint" id="remapHint">まず変換してください</div>
-      <div class="remap-list hidden" id="remapList"></div>
+      <div id="bgRemoveOpts" style="opacity:.45;pointer-events:none">
+        <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">許容差</span><span class="ctrl-val" id="vBgTol">32</span></div><input type="range" id="sBgTol" min="0" max="128" value="32"></div>
+      </div>
     </div></div>
   </div>
 
-  <!-- PAGE: 保存 -->
-  <div class="page" id="page-save">
-    <div class="page-title">保存</div>
-    <div class="page-sub">PNGでダウンロードできます</div>
-    <div class="card"><div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-primary" id="dlBtn" disabled>⬇ PNGダウンロード</button>
-      <button class="btn btn-ghost" id="undoBtn" disabled>← 一つ前に戻る</button>
-      <button class="btn btn-ghost" id="resetBtn2" disabled>↺ 設定リセット</button>
-    </div></div>
-  </div>
 
 </main>
 
@@ -467,8 +448,6 @@ input[type=file]{display:none}
 <div class="bottom-nav">
   <button class="tab-btn active" id="tab-convert"  onclick="switchTab('convert',this)"><div class="tab-bar"></div><span class="tab-icon">🔄</span>変換</button>
   <button class="tab-btn"        id="tab-settings" onclick="switchTab('settings',this)"><div class="tab-bar"></div><span class="tab-icon">⚙️</span>設定</button>
-  <button class="tab-btn"        id="tab-color"    onclick="switchTab('color',this)"><div class="tab-bar"></div><span class="tab-icon">🎨</span>カラー</button>
-  <button class="tab-btn"        id="tab-save"     onclick="switchTab('save',this)"><div class="tab-bar"></div><span class="tab-icon">💾</span>保存</button>
 </div>
 
 <!-- ═══ PC WORKSPACE (≥900px, CSS gridで表示) ═══ -->
@@ -616,23 +595,23 @@ input[type=file]{display:none}
       </div>
     </div>
 
-    <!-- カラーリマップ -->
+    <!-- 背景透過 -->
     <div class="card">
       <div class="pc-section-head" onclick="toggleSection(this)">
-        <span>カラーリマップ</span><span class="pc-section-chevron">▾</span>
+        <span>背景透過</span><span class="pc-section-chevron">▾</span>
       </div>
-      <div class="pc-section-body" id="sec-remap">
+      <div class="pc-section-body" id="sec-bg">
         <div class="card-body">
-          <div class="remap-toolbar">
-            <select class="remap-sort" id="remapSort-pc"><option value="freq">使用頻度順</option><option value="hue">色相順</option><option value="bright">明度順</option></select>
-            <button class="btn btn-ok" style="width:auto;padding:6px 12px;min-height:34px;font-size:11px;border-radius:var(--r-sm)" id="applyRemapBtn-pc" disabled>適用</button>
+          <div class="toggle-row" style="margin-bottom:12px">
+            <span class="toggle-label">背景を透過する</span>
+            <label class="toggle"><input type="checkbox" id="bgRemoveOn-pc"><span class="toggle-track"></span></label>
           </div>
-          <div class="remap-hint" id="remapHint-pc">まず変換してください</div>
-          <div class="remap-list hidden" id="remapList-pc"></div>
+          <div id="bgRemoveOpts-pc" style="opacity:.45;pointer-events:none">
+            <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">許容差（色のゆれ幅）</span><span class="ctrl-val" id="vBgTol-pc">32</span></div><input type="range" id="sBgTol-pc" min="0" max="128" value="32"></div>
+          </div>
         </div>
       </div>
     </div>
-
   </div><!-- /pc-right -->
 </div><!-- /pc-workspace -->
 
@@ -653,9 +632,9 @@ function isPC(){return window.innerWidth>=900}
 var State={
   srcImageData:null,srcWidth:0,srcHeight:0,
   currentOutput:null,pixelCols:0,pixelRows:0,
-  extractedColors:[],colorRemap:{},activePalette:'default',
+  activePalette:'default',
   currentView:'output',history:[],histIndex:-1,
-  processing:false,debTimer:null,abPos:.5
+  processing:false,debTimer:null,abPos:.5,bgRemoveOn:false,bgTolerance:32
 };
 
 /* ── PALETTES ── */
@@ -740,10 +719,79 @@ var PixelEngine={
     var fd;
     if(cfg.ditherOn&&!cfg.forcePalette){if(cfg.ditherType==='ordered')fd=this.orderedDither(px,cols,rows,palette,cfg.ditherStrength);else if(cfg.ditherType==='atkinson')fd=this.atkinson(px,cols,rows,palette,cfg.ditherStrength);else fd=this.floydSteinberg(px,cols,rows,palette,cfg.ditherStrength);}
     else{fd=new Uint8ClampedArray(px.length);for(var i=0;i<cols*rows;i++){if(px[i*4+3]<128){fd[i*4+3]=0;continue;}var nc=this.nearest(px[i*4],px[i*4+1],px[i*4+2],palette);fd[i*4]=nc[0];fd[i*4+1]=nc[1];fd[i*4+2]=nc[2];fd[i*4+3]=px[i*4+3];}}
-    if(cfg.colorRemap&&Object.keys(cfg.colorRemap).length){for(var i=0;i<cols*rows;i++){if(fd[i*4+3]<128)continue;var hx=r2h(fd[i*4],fd[i*4+1],fd[i*4+2]);if(cfg.colorRemap[hx]&&cfg.colorRemap[hx]!==hx){var mr=h2r(cfg.colorRemap[hx]);fd[i*4]=mr[0];fd[i*4+1]=mr[1];fd[i*4+2]=mr[2];}}}
     return{imageData:new ImageData(fd,cols,rows),cols:cols,rows:rows};
   }
 };
+
+/* ── BG REMOVAL ── */
+function removeBg(imageData, tolerance){
+  var w=imageData.width, h=imageData.height;
+  var d=new Uint8ClampedArray(imageData.data);
+  // 四隅の色を収集してもっとも多い色を背景色とする
+  var corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+  var bgColors=[];
+  corners.forEach(function(p){
+    var idx=(p[1]*w+p[0])*4;
+    if(d[idx+3]<128) return; // すでに透明ならスキップ
+    bgColors.push([d[idx],d[idx+1],d[idx+2]]);
+  });
+  if(!bgColors.length) return new ImageData(d,w,h);
+  // 四隅の色すべてに対してフラッドフィル
+  var visited=new Uint8Array(w*h);
+  bgColors.forEach(function(bgc){
+    // BFS flood fill from all 4 corners
+    corners.forEach(function(p){
+      var startIdx=(p[1]*w+p[0])*4;
+      if(d[startIdx+3]<10) return;
+      var sr=d[startIdx],sg=d[startIdx+1],sb=d[startIdx+2];
+      if(colorDist(sr,sg,sb,bgc[0],bgc[1],bgc[2])>tolerance) return;
+      var stack=[[p[0],p[1]]];
+      while(stack.length){
+        var pos=stack.pop();
+        var x=pos[0],y=pos[1];
+        if(x<0||x>=w||y<0||y>=h) continue;
+        var i=(y*w+x)*4;
+        if(visited[y*w+x]) continue;
+        if(d[i+3]<10){visited[y*w+x]=1;continue;}
+        var dr=d[i]-bgc[0],dg=d[i+1]-bgc[1],db=d[i+2]-bgc[2];
+        if(Math.sqrt(dr*dr+dg*dg+db*db)>tolerance) continue;
+        visited[y*w+x]=1;
+        d[i+3]=0; // 透明に
+        stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+      }
+    });
+  });
+  return new ImageData(d,w,h);
+}
+function colorDist(r1,g1,b1,r2,g2,b2){var dr=r1-r2,dg=g1-g2,db=b1-b2;return Math.sqrt(dr*dr+dg*dg+db*db);}
+
+function applyBgRemoval(){
+  if(!State.currentOutput) return;
+  if(!State.bgRemoveOn){
+    // 透過をリセット: 元の変換結果を再描画
+    renderOutputRaw(State.currentOutput, State.pixelCols, State.pixelRows);
+    document.getElementById('outputWrap').classList.remove('transparent-bg');
+    return;
+  }
+  var removed=removeBg(State.currentOutput, State.bgTolerance);
+  renderOutputRaw(removed, State.pixelCols, State.pixelRows);
+  document.getElementById('outputWrap').classList.add('transparent-bg');
+  // 透過済みデータを保存（ダウンロード用）
+  State.currentOutputBgRemoved=removed;
+}
+
+/* ── RENDER RAW (ImageData → canvas、bg removal用) ── */
+function renderOutputRaw(imageData, cols, rows){
+  var pc=isPC();
+  var ps=parseInt(document.getElementById(pc?'sPixel-pc':'sPixel').value)||8;
+  var oc=document.getElementById('outCanvas');
+  oc.width=cols*ps; oc.height=rows*ps;
+  var ctx=oc.getContext('2d'); ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,oc.width,oc.height);
+  var tmp=document.createElement('canvas'); tmp.width=cols; tmp.height=rows;
+  tmp.getContext('2d').putImageData(imageData,0,0);
+  ctx.drawImage(tmp,0,0,oc.width,oc.height);
+}
 
 /* ── SETTINGS: PCとモバイルで別ID ── */
 function getSettings(){
@@ -763,7 +811,6 @@ function getSettings(){
     ditherType:aDith?aDith.dataset.dither:'floyd',
     ditherStrength:parseInt(document.getElementById('sDither'+sfx).value)||100,
     forcePalette:pObj&&pObj.colors?pObj.colors:null,
-    colorRemap:State.colorRemap
   };
 }
 
@@ -794,23 +841,25 @@ function doConvert(){
     try{
       var s=getSettings(),r=PixelEngine.convert(State.srcImageData,s);
       renderOutput(r.imageData,r.cols,r.rows);
-      extractColors(r.imageData);
-      buildRemapUI();
       buildAB();setView(State.currentView);pushHistory(r.imageData);
       // enable controls
-      ['downloadBtn','resetBtn-m','resetBtn2','applyRemapBtn','applyRemapBtn-pc','undoPcBtn','undoBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=State.histIndex<=0&&id.indexOf('undo')!==-1?true:false;});
+      ['downloadBtn','resetBtn-m','resetBtn2','undoPcBtn','undoBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=State.histIndex<=0&&id.indexOf('undo')!==-1?true:false;});
       document.getElementById('downloadBtn').disabled=false;
       document.getElementById('resetPcBtn').disabled=false;
       var rm=document.getElementById('resetBtn-m');if(rm)rm.disabled=false;
-      var rb2=document.getElementById('resetBtn2');if(rb2)rb2.disabled=false;
-      var ar=document.getElementById('applyRemapBtn');if(ar)ar.disabled=false;
-      var arpc=document.getElementById('applyRemapBtn-pc');if(arpc)arpc.disabled=false;
       document.getElementById('historyCard').classList.remove('hidden');
       document.getElementById('viewToggle').classList.remove('hidden');
       var hcm=document.getElementById('historyCard-m');if(hcm)hcm.classList.remove('hidden');
       var vtm=document.getElementById('viewToggle-m');if(vtm)vtm.classList.remove('hidden');
       var dm=document.getElementById('downloadBtn-m');if(dm)dm.disabled=false;
       setSt('ok','変換完了 — '+r.cols+'×'+r.rows+'ドット');
+      // モバイル: 変換ボタンを隠して保存・戻る・リセット表示
+      var cvtm=document.getElementById('convertBtn-m');if(cvtm)cvtm.style.display='none';
+      var dlm=document.getElementById('downloadBtn-m');if(dlm){dlm.style.display='';dlm.disabled=false;}
+      var undom=document.getElementById('undoBtn');if(undom)undom.style.display='';
+      var rstm=document.getElementById('resetBtn-m');if(rstm){rstm.style.display='';rstm.disabled=false;}
+      // 背景透過が有効なら自動適用
+      if(State.bgRemoveOn) applyBgRemoval();
     }catch(e){
       console.error(e);setSt('err','エラー: '+e.message);showToast('変換に失敗しました');
     }
@@ -850,13 +899,15 @@ function loadFile(file){
       ['upload-icon','upload-title','upload-sub'].forEach(function(cls){var el=zone.querySelector('.'+cls);if(el)el.style.display='none';});
       document.getElementById('changeImgBtn').classList.remove('hidden');
       document.getElementById('srcInfo').textContent=w+'×'+h;
-      // Mobile preview
-      var prevm=document.getElementById('srcPreview-m');
-      if(prevm){prevm.src=e.target.result;prevm.classList.add('show');}
+      // Mobile: アップロードゾーンを隠してプレビューエリアを表示
       var zonem=document.getElementById('uploadZone-m');
-      if(zonem){zonem.classList.add('has-image');['upload-icon','upload-title','upload-sub'].forEach(function(cls){var el=zonem.querySelector('.'+cls);if(el)el.style.display='none';});}
+      if(zonem)zonem.style.display='none';
+      var pa=document.getElementById('previewArea-m');
+      if(pa)pa.style.display='block';
       var cbm=document.getElementById('changeImgBtn-m');if(cbm)cbm.classList.remove('hidden');
       var sim=document.getElementById('srcInfo-m');if(sim)sim.textContent=w+'×'+h;
+      // 変換ボタン→保存・リセット表示切り替え（変換後に行う）
+      var lbl=document.getElementById('previewLabel-m');if(lbl)lbl.textContent='ドット絵';
       setSt('ok','読み込み完了 — 変換してください');
       setTimeout(doConvert,100);
     };
@@ -865,49 +916,7 @@ function loadFile(file){
   reader.readAsDataURL(file);
 }
 
-/* ── EXTRACT COLORS ── */
-function extractColors(imageData){
-  var counts={},d=imageData.data,total=imageData.width*imageData.height;
-  for(var i=0;i<d.length;i+=4){if(d[i+3]<128)continue;var h=r2h(d[i],d[i+1],d[i+2]);counts[h]=(counts[h]||0)+1;}
-  State.extractedColors=Object.keys(counts).map(function(hex){var cv=h2r(hex);return{hex:hex,r:cv[0],g:cv[1],b:cv[2],count:counts[hex],pct:Math.round(counts[hex]/total*1000)/10};});
-  State.colorRemap={};State.extractedColors.forEach(function(c){State.colorRemap[c.hex]=c.hex;});
-}
 
-/* ── REMAP UI: PC + mobile両方更新 ── */
-function buildRemapUI(){
-  _buildRemapFor('remapList','remapHint','remapSort');
-  _buildRemapFor('remapList-pc','remapHint-pc','remapSort-pc');
-}
-function _buildRemapFor(listId,hintId,sortId){
-  var list=document.getElementById(listId),hint=document.getElementById(hintId),sortEl=document.getElementById(sortId);
-  if(!list||!hint||!sortEl)return;
-  var sort=sortEl.value,colors=State.extractedColors.slice();
-  if(sort==='hue')colors.sort(function(a,b){return getHue(a.r,a.g,a.b)-getHue(b.r,b.g,b.b)});
-  else if(sort==='bright')colors.sort(function(a,b){return getBright(b.r,b.g,b.b)-getBright(a.r,a.g,a.b)});
-  else colors.sort(function(a,b){return b.count-a.count});
-  if(!colors.length){hint.style.display='';list.classList.add('hidden');return;}
-  hint.style.display='none';list.classList.remove('hidden');list.innerHTML='';
-  colors.forEach(function(c){
-    var mapped=State.colorRemap[c.hex]||c.hex;
-    var item=document.createElement('div');item.className='remap-item';
-    var fromSw=document.createElement('input');fromSw.type='color';fromSw.className='remap-swatch from';fromSw.value=c.hex;fromSw.disabled=true;
-    var arrow=document.createElement('span');arrow.className='remap-arrow';arrow.textContent='→';
-    var toSw=document.createElement('input');toSw.type='color';toSw.className='remap-swatch';toSw.value=mapped;
-    (function(hex,sw){sw.addEventListener('change',function(){State.colorRemap[hex]=sw.value;});})(c.hex,toSw);
-    var info=document.createElement('div');info.className='remap-info';
-    var hexEl=document.createElement('div');hexEl.className='remap-hex';hexEl.textContent=c.hex;
-    var pctEl=document.createElement('div');pctEl.className='remap-pct';pctEl.textContent=c.pct+'%';
-    info.appendChild(hexEl);info.appendChild(pctEl);
-    item.appendChild(fromSw);item.appendChild(arrow);item.appendChild(toSw);item.appendChild(info);
-    list.appendChild(item);
-  });
-}
-
-function applyRemap(){
-  if(!State.srcImageData){showToast('先に変換してください');return;}
-  try{var s=getSettings();s.colorRemap=State.colorRemap;var r=PixelEngine.convert(State.srcImageData,s);renderOutput(r.imageData,r.cols,r.rows);buildAB();setSt('ok','色変更を適用しました');showToast('適用しました！');}
-  catch(e){console.error(e);showToast('適用に失敗しました');}
-}
 
 /* ── AB COMPARE ── */
 function buildAB(){
@@ -1011,14 +1020,13 @@ function restoreHistory(idx){
   if(idx<0||idx>=State.history.length)return;
   State.histIndex=idx;
   var id=State.history[idx];State.currentOutput=id;State.pixelCols=id.width;State.pixelRows=id.height;
-  extractColors(id);
   var pc=isPC();var ps=parseInt(document.getElementById(pc?'sPixel-pc':'sPixel').value)||8;
   var oc=document.getElementById('outCanvas');
   oc.width=id.width*ps;oc.height=id.height*ps;
   var ctx=oc.getContext('2d');ctx.imageSmoothingEnabled=false;
   var tmp=document.createElement('canvas');tmp.width=id.width;tmp.height=id.height;
   tmp.getContext('2d').putImageData(id,0,0);ctx.drawImage(tmp,0,0,oc.width,oc.height);
-  buildRemapUI();buildAB();renderHistory();
+buildAB();renderHistory();
   showToast('ステップ '+(idx+1)+' に戻しました');
 }
 
@@ -1077,8 +1085,14 @@ function showToast(msg){
 /* ── DOWNLOAD ── */
 function triggerDownload(){
   if(!State.currentOutput){showToast('まず変換してください');return;}
-  try{var oc=document.getElementById('outCanvas'),a=document.createElement('a');a.download='pixelcraft.png';a.href=oc.toDataURL('image/png');a.click();showToast('ダウンロードしました！');}
-  catch(e){console.error(e);showToast('ダウンロードに失敗しました');}
+  try{
+    var oc=document.getElementById('outCanvas');
+    var a=document.createElement('a');
+    a.download='pixelcraft.png';
+    a.href=oc.toDataURL('image/png');
+    a.click();
+    showToast('ダウンロードしました！');
+  }catch(e){console.error(e);showToast('ダウンロードに失敗しました');}
 }
 
 /* ── RESET ── */
@@ -1103,7 +1117,7 @@ function doReset(){
   ['#ditherSeg','#ditherSeg-pc'].forEach(function(sel){document.querySelectorAll(sel+' .seg-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});});
   State.activePalette='default';
   document.querySelectorAll('.pal-btn').forEach(function(b){b.classList.toggle('active',b.dataset.id==='default');});
-  State.colorRemap={};doConvert();
+  doConvert();
 }
 
 /* ── INIT ── */
@@ -1125,7 +1139,18 @@ function init(){
   var zonem=document.getElementById('uploadZone-m');
   var changeBtnm=document.getElementById('changeImgBtn-m');
   if(zonem){zonem.addEventListener('touchend',function(e){e.preventDefault();openFilePicker();});zonem.addEventListener('click',openFilePicker);}
-  if(changeBtnm){changeBtnm.addEventListener('touchend',function(e){e.preventDefault();openFilePicker();});changeBtnm.addEventListener('click',openFilePicker);}
+  if(changeBtnm){
+    function onChangeImg(){
+      openFilePicker();
+      // 画像変更時: プレビューエリアを隠してアップロードゾーン再表示
+      fi.addEventListener('change',function resetView(){
+        fi.removeEventListener('change',resetView);
+        // 新ファイル選択後にUIリセットは loadFile内で処理
+      },{once:true});
+    }
+    changeBtnm.addEventListener('touchend',function(e){e.preventDefault();onChangeImg();});
+    changeBtnm.addEventListener('click',onChangeImg);
+  }
 
   fi.addEventListener('change',function(){if(fi.files&&fi.files[0])loadFile(fi.files[0]);});
 
@@ -1204,14 +1229,56 @@ function init(){
   ['downloadBtn','downloadBtn-m'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',triggerDownload);});
 
   // Reset
-  ['resetBtn-m','resetBtn2','resetPcBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',doReset);});
+  ['resetBtn-m','resetPcBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',doReset);});
 
   // Undo
   ['undoBtn','undoPcBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',function(){if(State.histIndex>0)restoreHistory(State.histIndex-1);});});
 
-  // Remap
-  ['applyRemapBtn','applyRemapBtn-pc'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',applyRemap);});
-  ['remapSort','remapSort-pc'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('change',buildRemapUI);});
+
+  // 背景透過トグル (PC)
+  var bgpc=document.getElementById('bgRemoveOn-pc');
+  if(bgpc){
+    bgpc.addEventListener('change',function(e){
+      State.bgRemoveOn=e.target.checked;
+      document.getElementById('bgRemoveOpts-pc').style.opacity=e.target.checked?'1':'.45';
+      document.getElementById('bgRemoveOpts-pc').style.pointerEvents=e.target.checked?'auto':'none';
+      // mobile sync
+      var bgm=document.getElementById('bgRemoveOn');if(bgm)bgm.checked=e.target.checked;
+      var bgom=document.getElementById('bgRemoveOpts');if(bgom){bgom.style.opacity=e.target.checked?'1':'.45';bgom.style.pointerEvents=e.target.checked?'auto':'none';}
+      applyBgRemoval();
+    });
+  }
+  var tolpc=document.getElementById('sBgTol-pc');
+  if(tolpc){
+    tolpc.addEventListener('input',function(){
+      State.bgTolerance=parseInt(tolpc.value)||32;
+      document.getElementById('vBgTol-pc').textContent=tolpc.value;
+      var tolm=document.getElementById('sBgTol');if(tolm){tolm.value=tolpc.value;var vm=document.getElementById('vBgTol');if(vm)vm.textContent=tolpc.value;}
+      if(State.bgRemoveOn) applyBgRemoval();
+    });
+  }
+  // 背景透過トグル (mobile)
+  var bgm2=document.getElementById('bgRemoveOn');
+  if(bgm2){
+    bgm2.addEventListener('change',function(e){
+      State.bgRemoveOn=e.target.checked;
+      document.getElementById('bgRemoveOpts').style.opacity=e.target.checked?'1':'.45';
+      document.getElementById('bgRemoveOpts').style.pointerEvents=e.target.checked?'auto':'none';
+      // pc sync
+      var bgpc2=document.getElementById('bgRemoveOn-pc');if(bgpc2)bgpc2.checked=e.target.checked;
+      var bgopc=document.getElementById('bgRemoveOpts-pc');if(bgopc){bgopc.style.opacity=e.target.checked?'1':'.45';bgopc.style.pointerEvents=e.target.checked?'auto':'none';}
+      applyBgRemoval();
+    });
+  }
+  var tolm2=document.getElementById('sBgTol');
+  if(tolm2){
+    tolm2.addEventListener('input',function(){
+      State.bgTolerance=parseInt(tolm2.value)||32;
+      document.getElementById('vBgTol').textContent=tolm2.value;
+      var tolpc2=document.getElementById('sBgTol-pc');if(tolpc2){tolpc2.value=tolm2.value;var vp=document.getElementById('vBgTol-pc');if(vp)vp.textContent=tolm2.value;}
+      if(State.bgRemoveOn) applyBgRemoval();
+    });
+  }
 
   setSt('','画像を選択してください');
 }
