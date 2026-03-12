@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -200,6 +202,7 @@ button, input, select { font-family: inherit; }
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:active { background: #c73508; }
 .btn-primary:disabled { background: var(--border); color: var(--ink3); cursor: not-allowed; transform: none; }
+.btn-primary#convertBtn { background: var(--accent); color: #fff; } /* always visible */
 .btn-ghost { background: var(--surface2); color: var(--ink); border: 1.5px solid var(--border); }
 .btn-ghost:active { background: var(--border); }
 .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
@@ -444,7 +447,7 @@ input[type=file] { display: none; }
     </div>
 
     <!-- 変換ボタン -->
-    <button class="btn btn-primary" id="convertBtn" disabled>
+    <button class="btn btn-primary" id="convertBtn">
       ▶ ドット絵に変換
     </button>
 
@@ -919,7 +922,8 @@ function updateSaveCanvas(){
 
 /* ─── CONVERT ─── */
 function doConvert(){
-  if(!State.srcImageData||State.processing) return;
+  if(!State.srcImageData){showToast('先に画像を選択してください');return;}
+  if(State.processing) return;
   State.processing=true;
   setSt('busy','変換中...');
   document.getElementById('procOverlay').classList.add('show');
@@ -981,8 +985,8 @@ function loadFile(file){
       document.getElementById('changeImgBtn').classList.remove('hidden');
       document.getElementById('srcInfo').textContent=w+'×'+h;
       document.getElementById('convertBtn').disabled=false;
-      setSt('ok','画像を読み込みました');
-      doConvert();
+      setSt('ok','画像を読み込みました — 変換ボタンを押してください');
+      setTimeout(doConvert, 100);
     };
     img.onerror=function(){showToast('画像の読み込みに失敗しました');};
     img.src=e.target.result;
