@@ -209,7 +209,9 @@ input[type=file]{display:none}
     display:grid;
     grid-template-columns:280px 1fr 300px;
     gap:0;
-    height:calc(100vh - var(--nav-h));
+    position:fixed;
+    top:var(--nav-h);
+    left:0;right:0;bottom:0;
     overflow:hidden;
   }
 
@@ -234,7 +236,8 @@ input[type=file]{display:none}
   .pc-right{
     border-left:1px solid var(--border);
     display:flex;flex-direction:column;
-    overflow-y:auto;
+    overflow-y:scroll;
+    min-height:0;
     background:var(--surface);
   }
   .pc-right::-webkit-scrollbar{width:4px}
