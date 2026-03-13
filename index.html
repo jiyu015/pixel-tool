@@ -29,17 +29,43 @@ button,input,select{font-family:inherit}
 
 /* ═══ MOBILE LAYOUT ═══ */
 .pc-workspace{display:none;overflow:hidden;height:0;visibility:hidden}
-.main{padding-top:var(--nav-h);padding-bottom:calc(var(--tab-h) + var(--safe-b) + 8px);overflow:hidden}
-.page{display:none;padding:14px 14px 0}
-.page.active{display:block;padding-bottom:20px}
-
-/* ═══ BOTTOM NAV (mobile only) ═══ */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;height:calc(var(--tab-h) + var(--safe-b));padding-bottom:var(--safe-b);background:var(--surface);border-top:1px solid var(--border);display:flex;box-shadow:0 -2px 12px rgba(20,18,16,.07)}
-.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--ink3);font-size:10px;font-weight:600;padding:6px 4px;min-height:56px;transition:color .15s;border-radius:0;position:relative}
-.tab-btn .tab-icon{font-size:20px;line-height:1}
-.tab-btn.active{color:var(--accent)}
-.tab-bar{position:absolute;top:0;left:20%;right:20%;height:3px;background:transparent;border-radius:0 0 3px 3px}
-.tab-btn.active .tab-bar{background:var(--accent)}
+/* スマホ: タブなし・縦スクロール1ページ */
+.main{padding-top:var(--nav-h);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+.page{display:none}
+.page.active{display:block}
+/* スマホ専用レイアウト */
+.mob-layout{display:flex;flex-direction:column;height:calc(100vh - var(--nav-h))}
+/* 上半分: プレビュー固定 */
+.mob-preview{flex:0 0 50%;position:relative;background:var(--surface2);overflow:hidden}
+.mob-preview .output-wrap{width:100%;height:100%;border-radius:0;min-height:unset}
+.mob-preview #outCanvas-m{width:100%;height:100%;object-fit:contain;display:none}
+.mob-preview #outCanvas-m.show{display:block}
+/* アップロードゾーン（プレビューエリア内） */
+.mob-upload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;cursor:pointer;background:var(--surface2);-webkit-user-select:none;user-select:none}
+.mob-upload.hidden{display:none}
+.mob-upload .upload-icon{font-size:32px;margin-bottom:8px}
+.mob-upload .upload-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+.mob-upload .upload-sub{font-size:11px;color:var(--ink2);line-height:1.5}
+.mob-upload .upload-sub strong{color:var(--accent)}
+/* プレビューオーバーレイツールバー */
+.mob-preview-bar{position:absolute;top:8px;left:8px;right:8px;display:flex;align-items:center;gap:6px;z-index:10}
+.mob-preview-bar.hidden{display:none}
+.mob-view-btn{padding:5px 10px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(20,18,16,.55);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:background .15s;white-space:nowrap}
+.mob-view-btn.active{background:var(--accent)}
+.mob-change-btn{margin-left:auto;padding:5px 10px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(20,18,16,.55);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+/* ステータスバー */
+.mob-status{display:flex;align-items:center;gap:7px;padding:7px 14px;background:var(--surface);border-bottom:1px solid var(--border);font-size:12px;color:var(--ink2);flex-shrink:0}
+/* 下半分: 設定スクロールエリア */
+.mob-settings{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg)}
+.mob-settings::-webkit-scrollbar{display:none}
+/* 設定内パディング */
+.mob-settings-inner{padding:10px 14px 20px}
+.mob-settings-inner .card{margin-bottom:8px}
+/* アクションバー（設定上部に固定） */
+.mob-action-bar{display:flex;gap:8px;margin-bottom:10px}
+.mob-action-bar .btn{min-height:44px;font-size:13px}
+/* ボトムナブ非表示 */
+.bottom-nav{display:none}
 
 /* ═══ CARDS ═══ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(20,18,16,.04),0 4px 12px rgba(20,18,16,.05)}
@@ -343,116 +369,108 @@ input[type=file]{display:none}
   </div>
 </nav>
 
-<!-- ═══ MOBILE PAGES ═══ -->
+<!-- ═══ MOBILE ═══ -->
 <main class="main">
+  <div class="mob-layout" id="mobLayout">
 
-  <!-- PAGE: 変換 -->
-  <div class="page active" id="page-convert">
-    <div class="status-bar"><span class="sd" id="sd-m"></span><span id="stText-m">画像をアップロードしてください</span></div>
-
-    <!-- アップロード or ドット絵プレビュー (1枚のカード) -->
-    <div class="card">
-      <div class="card-head">
-        <span class="card-title" id="previewLabel-m">元画像</span>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="card-badge" id="srcInfo-m">—</span>
-          <span class="card-badge hidden" id="outInfo-m" style="background:var(--accent-soft);color:var(--accent)">—</span>
-          <button class="change-img-btn" id="changeImgBtn-m" style="position:static;background:var(--surface2);color:var(--ink2);font-size:11px;padding:3px 8px;border-radius:6px" class="hidden">✎ 変更</button>
+    <!-- 上半分: プレビュー -->
+    <div class="mob-preview" id="mobPreview">
+      <!-- アップロードゾーン -->
+      <div class="mob-upload" id="uploadZone-m">
+        <div class="upload-icon">🖼️</div>
+        <div class="upload-title">タップして選択</div>
+        <div class="upload-sub">JPG / PNG / WEBP<br><strong>タップまたはドロップ</strong></div>
+      </div>
+      <!-- プレビューオーバーレイ: ビュー切り替え + 変更ボタン -->
+      <div class="mob-preview-bar hidden" id="mobPreviewBar">
+        <button class="mob-view-btn active" data-v="output">ドット絵</button>
+        <button class="mob-view-btn" data-v="ab">A/B</button>
+        <button class="mob-view-btn" data-v="original">元画像</button>
+        <button class="mob-change-btn" id="changeImgBtn-m">✎ 変更</button>
+      </div>
+      <!-- キャンバス -->
+      <div class="output-wrap" id="outputWrap-m" style="border-radius:0;min-height:unset;width:100%;height:100%">
+        <div class="out-placeholder" id="outPlaceholder-m" style="display:none"></div>
+        <canvas id="outCanvas-m" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;display:none"></canvas>
+        <div class="ab-wrap" id="abWrap-m">
+          <canvas id="abA-m" class="ab-canvas-a"></canvas>
+          <canvas id="abB-m" class="ab-canvas-b"></canvas>
+          <div class="ab-line" id="abLine-m"></div>
+          <div class="ab-handle" id="abHandle-m">⇔</div>
+          <span class="ab-lbl ab-lbl-a">元画像</span><span class="ab-lbl ab-lbl-b">ドット絵</span>
         </div>
       </div>
-      <div class="card-body" style="padding:10px">
-        <!-- アップロードゾーン (画像なし時) -->
-        <div class="upload-zone" id="uploadZone-m">
-          <div class="upload-icon">🖼️</div>
-          <div class="upload-title">タップして選択</div>
-          <div class="upload-sub">JPG / PNG / WEBP<br><strong>ドラッグ&amp;ドロップも可</strong></div>
+      <div class="proc-overlay" id="procOverlay-m"><div class="spinner"></div><div class="proc-label">変換中...</div></div>
+    </div>
+
+    <!-- ステータスバー -->
+    <div class="mob-status">
+      <span class="sd" id="sd-m"></span>
+      <span id="stText-m">画像をタップして選択</span>
+      <span id="outInfo-m" style="margin-left:auto;font-size:11px;color:var(--ink3)"></span>
+    </div>
+
+    <!-- 下半分: 設定スクロールエリア -->
+    <div class="mob-settings">
+      <div class="mob-settings-inner">
+
+        <!-- アクションボタン -->
+        <div class="mob-action-bar">
+          <button class="btn btn-primary" id="convertBtn-m" style="flex:2">▶ 変換</button>
+          <button class="btn btn-ok" id="downloadBtn-m" disabled style="flex:1">⬇ 保存</button>
+          <button class="btn btn-ghost" id="resetBtn-m" disabled style="flex:0 0 44px;padding:0">↺</button>
         </div>
-        <!-- プレビューエリア (画像あり時) -->
-        <div id="previewArea-m" style="display:none">
-          <!-- ビュー切り替え -->
-          <div class="view-toggle hidden" id="viewToggle-m" style="margin-bottom:8px">
-            <button class="view-btn active" data-v="output">ドット絵</button>
-            <button class="view-btn" data-v="ab">A/B比較</button>
-            <button class="view-btn" data-v="original">元画像</button>
+
+        <!-- 基本設定 -->
+        <div class="card"><div class="card-body">
+          <div class="sec-label">基本設定</div>
+          <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">ドットサイズ</span><span class="ctrl-val" id="vPixel">8</span></div><input type="range" id="sPixel" min="2" max="32" value="8"></div>
+          <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">最大色数</span><span class="ctrl-val" id="vColor">16</span></div><input type="range" id="sColor" min="2" max="64" value="16"></div>
+          <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">コントラスト</span><span class="ctrl-val" id="vContrast">0</span></div><input type="range" id="sContrast" min="-50" max="80" value="0"></div>
+          <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">シャープネス</span><span class="ctrl-val" id="vSharp">0</span></div><input type="range" id="sSharp" min="0" max="10" value="0"></div>
+          <div class="sec-label" style="margin-top:12px">変換モード</div>
+          <div class="seg" id="modeSeg"><button class="seg-btn active" data-mode="smooth">なめらか</button><button class="seg-btn" data-mode="edge">輪郭重視</button><button class="seg-btn" data-mode="retro">レトロ</button></div>
+        </div></div>
+
+        <!-- ディザリング -->
+        <div class="card"><div class="card-body">
+          <div class="sec-label">ディザリング</div>
+          <div class="toggle-row" style="margin-bottom:10px"><span class="toggle-label">有効</span><label class="toggle"><input type="checkbox" id="ditherOn" checked><span class="toggle-track"></span></label></div>
+          <div id="ditherOpts">
+            <div class="seg" id="ditherSeg" style="margin-bottom:10px"><button class="seg-btn active" data-dither="floyd">Floyd-S</button><button class="seg-btn" data-dither="ordered">Ordered</button><button class="seg-btn" data-dither="atkinson">Atkinson</button></div>
+            <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">強さ</span><span class="ctrl-val" id="vDither">100</span></div><input type="range" id="sDither" min="10" max="100" value="100"></div>
           </div>
-          <div style="position:relative">
-            <div class="output-wrap" id="outputWrap-m">
-              <div class="out-placeholder" id="outPlaceholder-m"><div class="ph-icon">⬜</div><div class="ph-text">変換中...</div></div>
-              <canvas id="outCanvas-m"></canvas>
-              <div class="ab-wrap" id="abWrap-m">
-                <canvas id="abA-m" class="ab-canvas-a"></canvas>
-                <canvas id="abB-m" class="ab-canvas-b"></canvas>
-                <div class="ab-line" id="abLine-m"></div>
-                <div class="ab-handle" id="abHandle-m">⇔</div>
-                <span class="ab-lbl ab-lbl-a">元画像</span><span class="ab-lbl ab-lbl-b">ドット絵</span>
-              </div>
-            </div>
-            <div class="proc-overlay" id="procOverlay-m"><div class="spinner"></div><div class="proc-label">変換中...</div></div>
+        </div></div>
+
+        <!-- パレット -->
+        <div class="card"><div class="card-body">
+          <div class="sec-label">カラーパレット</div>
+          <div class="pal-grid" id="palGrid"></div>
+        </div></div>
+
+        <!-- 背景透過 -->
+        <div class="card"><div class="card-body">
+          <div class="sec-label">背景透過</div>
+          <div class="toggle-row" style="margin-bottom:10px">
+            <span class="toggle-label">背景を透過する</span>
+            <label class="toggle"><input type="checkbox" id="bgRemoveOn"><span class="toggle-track"></span></label>
           </div>
+          <div id="bgRemoveOpts" style="opacity:.45;pointer-events:none">
+            <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">許容差</span><span class="ctrl-val" id="vBgTol">32</span></div><input type="range" id="sBgTol" min="0" max="128" value="32"></div>
+          </div>
+        </div></div>
+
+        <!-- 履歴 -->
+        <div class="card hidden" id="historyCard-m">
+          <div class="card-head"><span class="card-title">変換履歴</span><span class="card-badge" id="histBadge-m">0</span></div>
+          <div class="card-body" style="padding:8px 12px"><div class="history-strip" id="histStrip-m"></div></div>
         </div>
+
       </div>
-    </div>
-
-    <!-- 履歴 -->
-    <div class="card hidden" id="historyCard-m">
-      <div class="card-head"><span class="card-title">変換履歴</span><span class="card-badge" id="histBadge-m">0</span></div>
-      <div class="card-body" style="padding:8px 12px"><div class="history-strip" id="histStrip-m"></div></div>
-    </div>
-
-    <!-- アクションボタン -->
-    <div class="btn-row mt8">
-      <button class="btn btn-primary" id="convertBtn-m">▶ 変換</button>
-      <button class="btn btn-primary" id="downloadBtn-m" disabled style="display:none">⬇ 保存</button>
-      <button class="btn btn-ghost" id="undoBtn" disabled style="flex:0 0 auto;width:auto;padding:10px 14px;font-size:12px;display:none">← 戻る</button>
-      <button class="btn btn-ghost" id="resetBtn-m" disabled style="flex:0 0 auto;width:46px;padding:10px;display:none">↺</button>
     </div>
   </div>
-
-  <!-- PAGE: 設定 -->
-  <div class="page" id="page-settings">
-    <div class="page-title">変換設定</div>
-    <div class="page-sub">スライダーを動かすと自動で再変換されます</div>
-    <div class="card"><div class="card-body">
-      <div class="sec-label">基本設定</div>
-      <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">ドットサイズ</span><span class="ctrl-val" id="vPixel">8</span></div><input type="range" id="sPixel" min="2" max="32" value="8"></div>
-      <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">最大色数</span><span class="ctrl-val" id="vColor">16</span></div><input type="range" id="sColor" min="2" max="64" value="16"></div>
-      <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">コントラスト</span><span class="ctrl-val" id="vContrast">0</span></div><input type="range" id="sContrast" min="-50" max="80" value="0"></div>
-      <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">シャープネス</span><span class="ctrl-val" id="vSharp">0</span></div><input type="range" id="sSharp" min="0" max="10" value="0"></div>
-      <div class="sec-label">変換モード</div>
-      <div class="seg" id="modeSeg"><button class="seg-btn active" data-mode="smooth">なめらか</button><button class="seg-btn" data-mode="edge">輪郭重視</button><button class="seg-btn" data-mode="retro">レトロ</button></div>
-    </div></div>
-    <div class="card"><div class="card-body">
-      <div class="sec-label">ディザリング</div>
-      <div class="toggle-row" style="margin-bottom:10px"><span class="toggle-label">ディザリング有効</span><label class="toggle"><input type="checkbox" id="ditherOn" checked><span class="toggle-track"></span></label></div>
-      <div id="ditherOpts">
-        <div class="seg" id="ditherSeg" style="margin-bottom:10px"><button class="seg-btn active" data-dither="floyd">Floyd-S</button><button class="seg-btn" data-dither="ordered">Ordered</button><button class="seg-btn" data-dither="atkinson">Atkinson</button></div>
-        <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">強さ</span><span class="ctrl-val" id="vDither">100</span></div><input type="range" id="sDither" min="10" max="100" value="100"></div>
-      </div>
-    </div></div>
-    <div class="card"><div class="card-body">
-      <div class="sec-label">カラーパレット</div>
-      <div class="pal-grid" id="palGrid"></div>
-    </div></div>
-    <div class="card"><div class="card-body">
-      <div class="sec-label">背景透過</div>
-      <div class="toggle-row" style="margin-bottom:10px">
-        <span class="toggle-label">背景を透過する</span>
-        <label class="toggle"><input type="checkbox" id="bgRemoveOn"><span class="toggle-track"></span></label>
-      </div>
-      <div id="bgRemoveOpts" style="opacity:.45;pointer-events:none">
-        <div class="ctrl"><div class="ctrl-head"><span class="ctrl-label">許容差</span><span class="ctrl-val" id="vBgTol">32</span></div><input type="range" id="sBgTol" min="0" max="128" value="32"></div>
-      </div>
-    </div></div>
-  </div>
-
-
 </main>
-
-<!-- MOBILE BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="tab-btn active" id="tab-convert"  onclick="switchTab('convert',this)"><div class="tab-bar"></div><span class="tab-icon">🔄</span>変換</button>
-  <button class="tab-btn"        id="tab-settings" onclick="switchTab('settings',this)"><div class="tab-bar"></div><span class="tab-icon">⚙️</span>設定</button>
-</div>
+<div class="bottom-nav" style="display:none"></div>
 
 <!-- ═══ PC WORKSPACE (≥900px, CSS gridで表示) ═══ -->
 <div class="pc-workspace" id="pcWorkspace">
@@ -822,16 +840,25 @@ function getSettings(){
 function renderOutput(imageData,cols,rows){
   var pc=isPC();
   var ps=parseInt(document.getElementById(pc?'sPixel-pc':'sPixel').value)||8;
-  var oc=document.getElementById('outCanvas');
-  oc.width=cols*ps;oc.height=rows*ps;
-  var ctx=oc.getContext('2d');ctx.imageSmoothingEnabled=false;
-  var tmp=document.createElement('canvas');tmp.width=cols;tmp.height=rows;
-  tmp.getContext('2d').putImageData(imageData,0,0);
-  ctx.drawImage(tmp,0,0,oc.width,oc.height);
-  oc.classList.add('show');
-  document.getElementById('outPlaceholder').style.display='none';
-  document.getElementById('outInfo').textContent=cols+'×'+rows+'px';
   State.currentOutput=imageData;State.pixelCols=cols;State.pixelRows=rows;
+
+  function drawToCanvas(id){
+    var oc=document.getElementById(id);if(!oc)return;
+    oc.width=cols*ps;oc.height=rows*ps;
+    var ctx=oc.getContext('2d');ctx.imageSmoothingEnabled=false;
+    var tmp=document.createElement('canvas');tmp.width=cols;tmp.height=rows;
+    tmp.getContext('2d').putImageData(imageData,0,0);
+    ctx.drawImage(tmp,0,0,oc.width,oc.height);
+    oc.classList.add('show');
+  }
+  drawToCanvas('outCanvas');
+  drawToCanvas('outCanvas-m');
+
+  // PC用プレースホルダー
+  var ph=document.getElementById('outPlaceholder');if(ph)ph.style.display='none';
+  var phm=document.getElementById('outPlaceholder-m');if(phm)phm.style.display='none';
+  var oi=document.getElementById('outInfo');if(oi)oi.textContent=cols+'×'+rows+'px';
+  var oim=document.getElementById('outInfo-m');if(oim)oim.textContent=cols+'×'+rows+'px';
 }
 
 /* ── CONVERT ── */
@@ -841,6 +868,7 @@ function doConvert(){
   State.processing=true;
   setSt('busy','変換中...');
   document.getElementById('procOverlay').classList.add('show');
+  var pom=document.getElementById('procOverlay-m');if(pom)pom.classList.add('show');
   setTimeout(function(){
     try{
       var s=getSettings(),r=PixelEngine.convert(State.srcImageData,s);
@@ -857,11 +885,9 @@ function doConvert(){
       var vtm=document.getElementById('viewToggle-m');if(vtm)vtm.classList.remove('hidden');
       var dm=document.getElementById('downloadBtn-m');if(dm)dm.disabled=false;
       setSt('ok','変換完了 — '+r.cols+'×'+r.rows+'ドット');
-      // モバイル: 変換ボタンを隠して保存・戻る・リセット表示
-      var cvtm=document.getElementById('convertBtn-m');if(cvtm)cvtm.style.display='none';
-      var dlm=document.getElementById('downloadBtn-m');if(dlm){dlm.style.display='';dlm.disabled=false;}
-      var undom=document.getElementById('undoBtn');if(undom)undom.style.display='';
-      var rstm=document.getElementById('resetBtn-m');if(rstm){rstm.style.display='';rstm.disabled=false;}
+      // モバイル: 保存・リセットボタンを有効化
+      var dlm=document.getElementById('downloadBtn-m');if(dlm)dlm.disabled=false;
+      var rstm=document.getElementById('resetBtn-m');if(rstm)rstm.disabled=false;
       // 背景透過が有効なら自動適用
       if(State.bgRemoveOn) applyBgRemoval();
     }catch(e){
@@ -869,6 +895,7 @@ function doConvert(){
     }
     State.processing=false;
     document.getElementById('procOverlay').classList.remove('show');
+  var pomh=document.getElementById('procOverlay-m');if(pomh)pomh.classList.remove('show');
   },20);
 }
 
@@ -903,15 +930,12 @@ function loadFile(file){
       ['upload-icon','upload-title','upload-sub'].forEach(function(cls){var el=zone.querySelector('.'+cls);if(el)el.style.display='none';});
       document.getElementById('changeImgBtn').classList.remove('hidden');
       document.getElementById('srcInfo').textContent=w+'×'+h;
-      // Mobile: アップロードゾーンを隠してプレビューエリアを表示
+      // Mobile: アップロードゾーンを隠してプレビューバーを表示
       var zonem=document.getElementById('uploadZone-m');
-      if(zonem)zonem.style.display='none';
-      var pa=document.getElementById('previewArea-m');
-      if(pa)pa.style.display='block';
-      var cbm=document.getElementById('changeImgBtn-m');if(cbm)cbm.classList.remove('hidden');
+      if(zonem)zonem.classList.add('hidden');
+      var bar=document.getElementById('mobPreviewBar');
+      if(bar)bar.classList.remove('hidden');
       var sim=document.getElementById('srcInfo-m');if(sim)sim.textContent=w+'×'+h;
-      // 変換ボタン→保存・リセット表示切り替え（変換後に行う）
-      var lbl=document.getElementById('previewLabel-m');if(lbl)lbl.textContent='ドット絵';
       setSt('ok','読み込み完了 — 変換してください');
       setTimeout(doConvert,100);
     };
@@ -1142,18 +1166,13 @@ function init(){
   // Mobile upload
   var zonem=document.getElementById('uploadZone-m');
   var changeBtnm=document.getElementById('changeImgBtn-m');
-  if(zonem){zonem.addEventListener('touchend',function(e){e.preventDefault();openFilePicker();});zonem.addEventListener('click',openFilePicker);}
+  if(zonem){
+    zonem.addEventListener('touchend',function(e){e.preventDefault();openFilePicker();});
+    zonem.addEventListener('click',openFilePicker);
+  }
   if(changeBtnm){
-    function onChangeImg(){
-      openFilePicker();
-      // 画像変更時: プレビューエリアを隠してアップロードゾーン再表示
-      fi.addEventListener('change',function resetView(){
-        fi.removeEventListener('change',resetView);
-        // 新ファイル選択後にUIリセットは loadFile内で処理
-      },{once:true});
-    }
-    changeBtnm.addEventListener('touchend',function(e){e.preventDefault();onChangeImg();});
-    changeBtnm.addEventListener('click',onChangeImg);
+    changeBtnm.addEventListener('touchend',function(e){e.preventDefault();openFilePicker();});
+    changeBtnm.addEventListener('click',openFilePicker);
   }
 
   fi.addEventListener('change',function(){if(fi.files&&fi.files[0])loadFile(fi.files[0]);});
@@ -1228,6 +1247,14 @@ function init(){
 
   // View toggle
   document.querySelectorAll('.view-btn').forEach(function(btn){btn.addEventListener('click',function(){setView(btn.dataset.v);});});
+  // スマホ用ビュー切り替えボタン
+  document.querySelectorAll('.mob-view-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.mob-view-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      setView(btn.dataset.v);
+    });
+  });
 
   // Download
   ['downloadBtn','downloadBtn-m'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',triggerDownload);});
@@ -1236,7 +1263,7 @@ function init(){
   ['resetBtn-m','resetPcBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',doReset);});
 
   // Undo
-  ['undoBtn','undoPcBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',function(){if(State.histIndex>0)restoreHistory(State.histIndex-1);});});
+  ['undoPcBtn'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',function(){if(State.histIndex>0)restoreHistory(State.histIndex-1);});});
 
 
   // 背景透過トグル (PC)
