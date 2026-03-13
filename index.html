@@ -30,11 +30,11 @@ button,input,select{font-family:inherit}
 /* ═══ MOBILE LAYOUT ═══ */
 .pc-workspace{display:none;overflow:hidden;height:0;visibility:hidden}
 /* スマホ: タブなし・縦スクロール1ページ */
-.main{padding-top:var(--nav-h);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+.main{padding-top:var(--nav-h);height:100dvh;overflow:hidden}
 .page{display:none}
 .page.active{display:block}
 /* スマホ専用レイアウト */
-.mob-layout{display:flex;flex-direction:column;height:calc(100vh - var(--nav-h))}
+.mob-layout{display:flex;flex-direction:column;height:100%}
 /* 上半分: プレビュー固定 */
 .mob-preview{flex:0 0 50%;position:relative;background:var(--surface2);overflow:hidden}
 .mob-preview .output-wrap{width:100%;height:100%;border-radius:0;min-height:unset}
